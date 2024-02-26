@@ -118,7 +118,7 @@ public class BowController : MonoBehaviour
         float totalDamage = baseDamage * activeMultiplier * pullbackPercentage;
         arrowScript.SetDamage(totalDamage);
 
-        arrowScript.ReleaseArrow(); // Call the ReleaseArrow method
+        arrowScript.ReleaseArrow(); 
 
         instantiatedArrow.transform.parent = null;
         instantiatedArrow = null;
