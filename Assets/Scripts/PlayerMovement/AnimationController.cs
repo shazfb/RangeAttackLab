@@ -6,26 +6,53 @@ public class AnimationController : MonoBehaviour
 {
     [SerializeField] GameObject playerMesh;
     Animator animator;
-    // Start is called before the first frame update
+
     void Start()
     {
         animator = playerMesh.gameObject.GetComponent<Animator>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        float forwardMovement = Input.GetAxisRaw("Vertical");
-        if (forwardMovement > 0)
+        float verticalMovement = Input.GetAxisRaw("Vertical");
+        float horizontalMovement = Input.GetAxisRaw("Horizontal");
+
+        if (verticalMovement > 0)
         {
-            animator.SetBool("isWalking", true);
+            animator.SetBool("isWalkingForward", true);
+            animator.SetBool("isWalkingBackward", false);
+            animator.SetBool("isWalkingLeft", false);
+            animator.SetBool("isWalkingRight", false);
+        }
+        else if (verticalMovement < 0)
+        {
+            animator.SetBool("isWalkingForward", false);
+            animator.SetBool("isWalkingBackward", true);
+            animator.SetBool("isWalkingLeft", false);
+            animator.SetBool("isWalkingRight", false);
+        }
+        else if (horizontalMovement > 0)
+        {
+            animator.SetBool("isWalkingForward", false);
+            animator.SetBool("isWalkingBackward", false);
+            animator.SetBool("isWalkingLeft", false);
+            animator.SetBool("isWalkingRight", true);
+        }
+        else if (horizontalMovement < 0)
+        {
+            animator.SetBool("isWalkingForward", false);
+            animator.SetBool("isWalkingBackward", false);
+            animator.SetBool("isWalkingLeft", true);
+            animator.SetBool("isWalkingRight", false);
         }
         else
         {
-            animator.SetBool("isWalking", false);
+            animator.SetBool("isWalkingForward", false);
+            animator.SetBool("isWalkingBackward", false);
+            animator.SetBool("isWalkingLeft", false);
+            animator.SetBool("isWalkingRight", false);
         }
-
-        // Check for sprinting
+      
         if (Input.GetKey(KeyCode.LeftShift))
         {
             animator.SetBool("isSprinting", true);
@@ -35,7 +62,6 @@ public class AnimationController : MonoBehaviour
             animator.SetBool("isSprinting", false);
         }
 
-        // Check for aiming
         if (Input.GetMouseButton(0))
         {
             animator.SetBool("isAiming", true);
@@ -44,6 +70,5 @@ public class AnimationController : MonoBehaviour
         {
             animator.SetBool("isAiming", false);
         }
-        
     }
 }

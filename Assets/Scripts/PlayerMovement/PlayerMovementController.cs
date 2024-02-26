@@ -7,31 +7,42 @@ public class PlayerMovementController : MonoBehaviour
     public float maxSpeedMultiplier = 3f;
     public float currentSpeedMultiplier = 1f;
     public float cameraSensitivity = 2f;
-    public float maxVerticalAngle = 80f; // Maximum vertical angle for looking up and down
-    public RectTransform canvasRect; // Reference to the canvas RectTransform
-
+    public float maxVerticalAngle = 80f;
+    public float jumpForce = 8f;
+    public float fallMultiplier = 2.5f;
+    public float lowJumpMultiplier = 2f;
+    public RectTransform canvasRect;
     public CinemachineVirtualCamera thirdPersonCamera;
     public CinemachineVirtualCamera aimCamera;
 
     private bool isAiming = false;
+    public bool isGrounded = true;
+    private Rigidbody playerRigidbody;
     private Transform playerTransform;
     private float verticalRotation = 0f;
+
+    public Animator animator;
 
     private void Start()
     {
         playerTransform = transform;
-        Cursor.lockState = CursorLockMode.Locked; // Lock cursor at the center of the screen
-        Cursor.visible = false; // Hide cursor
+        playerRigidbody = GetComponent<Rigidbody>();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
         thirdPersonCamera.gameObject.SetActive(true);
         aimCamera.gameObject.SetActive(false);
     }
 
     private void Update()
     {
-        // Player movement with WASD
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-        // moveSpeed multiplier when holding shift
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            Jump();
+        }
+
         if (Input.GetKey(KeyCode.LeftShift))
         {
             currentSpeedMultiplier = maxSpeedMultiplier;
@@ -40,15 +51,23 @@ public class PlayerMovementController : MonoBehaviour
         {
             currentSpeedMultiplier = 1;
         }
-            Vector3 movement = new Vector3(horizontal, 0f, vertical).normalized;
+
+        Vector3 movement = new Vector3(horizontal, 0f, vertical).normalized;
         playerTransform.Translate(movement * moveSpeed * currentSpeedMultiplier * Time.deltaTime);
 
-        // Rotate the player around the y-axis based on horizontal mouse movement
+        if (playerRigidbody.velocity.y < 0)
+        {
+            playerRigidbody.velocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        }
+        else if (playerRigidbody.velocity.y > 0 && !Input.GetKey(KeyCode.Space))
+        {
+            playerRigidbody.velocity += Vector3.up * Physics.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+        }
+
         float mouseX = Input.GetAxis("Mouse X") * cameraSensitivity;
         playerTransform.Rotate(Vector3.up, mouseX);
 
-        // Toggle aiming mode with right mouse button
-        if (Input.GetMouseButtonDown(1)) // Right mouse button
+        if (Input.GetMouseButtonDown(1))
         {
             isAiming = true;
             thirdPersonCamera.gameObject.SetActive(false);
@@ -61,35 +80,50 @@ public class PlayerMovementController : MonoBehaviour
             thirdPersonCamera.gameObject.SetActive(true);
         }
 
-        // Rotate the camera based on vertical mouse movement when aiming
         if (isAiming)
         {
-            float mouseY = Input.GetAxis("Mouse Y") * cameraSensitivity * -1; // Invert vertical aiming
-            // Calculate the new vertical rotation
+            float mouseY = Input.GetAxis("Mouse Y") * cameraSensitivity * -1;
             verticalRotation += mouseY;
-            // Clamp the vertical rotation within the specified limits
             verticalRotation = Mathf.Clamp(verticalRotation, -maxVerticalAngle, maxVerticalAngle);
-            // Apply the rotation to the aim camera
             aimCamera.transform.localRotation = Quaternion.Euler(verticalRotation, aimCamera.transform.localEulerAngles.y, 0f);
         }
-        else // Rotate the third person camera if not aiming
+        else
         {
-            float mouseY = Input.GetAxis("Mouse Y") * cameraSensitivity * -1; // Invert vertical aiming
-            // Calculate the new vertical rotation
+            float mouseY = Input.GetAxis("Mouse Y") * cameraSensitivity * -1;
             verticalRotation += mouseY;
-            // Clamp the vertical rotation within the specified limits
             verticalRotation = Mathf.Clamp(verticalRotation, -maxVerticalAngle, maxVerticalAngle);
-            // Apply the rotation to the third person camera
             thirdPersonCamera.transform.localRotation = Quaternion.Euler(verticalRotation, thirdPersonCamera.transform.localEulerAngles.y, 0f);
         }
 
-        // Calculate the rotation based on the mouse position within the canvas bounds
         if (canvasRect != null)
         {
             Vector2 mousePos = Input.mousePosition;
             Vector2 canvasSize = canvasRect.sizeDelta;
-            float xRotation = (mousePos.y / canvasSize.y) * maxVerticalAngle * 2f - maxVerticalAngle; // Map mouse y position to vertical rotation
+            float xRotation = (mousePos.y / canvasSize.y) * maxVerticalAngle * 2f - maxVerticalAngle;
             aimCamera.transform.localRotation = Quaternion.Euler(xRotation, aimCamera.transform.localEulerAngles.y, 0f);
+        }
+
+        if (isGrounded)
+        {
+            animator.SetBool("isJumping", false);
+        }
+        else if (!isGrounded)
+        {
+            animator.SetBool("isJumping", true);
+        }
+    }
+
+    private void Jump()
+    {
+        playerRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        isGrounded = false;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;
         }
     }
 }
