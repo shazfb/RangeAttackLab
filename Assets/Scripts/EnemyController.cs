@@ -3,18 +3,19 @@ using UnityEngine;
 public class EnemyController : MonoBehaviour
 {
     public float destroyDelay = 5f;
-    public float speed = 0.4f; 
-    public float rotationSpeed = 5f; 
+    public float speed = 0.4f;
+    public float rotationSpeed = 5f;
 
     private bool hasCollided = false;
-    private Transform player; 
-    private Animator animator; 
-    private Transform childTransform;
+    private Transform player;
+    private Animator animator;
+    private EnemyKillCounter killCounter;
+
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         animator = GetComponentInChildren<Animator>();
-        childTransform = animator.transform;
+        killCounter = FindObjectOfType<EnemyKillCounter>();
     }
 
     void Update()
@@ -22,32 +23,37 @@ public class EnemyController : MonoBehaviour
         if (!hasCollided)
         {
             transform.position = Vector3.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
-                        
+
             Vector3 direction = (player.position - transform.position).normalized;
-                       
+
             Quaternion lookRotation = Quaternion.LookRotation(direction);
-            childTransform.rotation = Quaternion.Slerp(childTransform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
-                        
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
+
             animator.SetBool("isFollowing", true);
         }
         else
-        {            
+        {
             animator.SetBool("isFollowing", false);
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    void OnCollisionEnter(Collision collision)
     {
-        if (other.CompareTag("Arrow") && !hasCollided)
-        {            
+        if (collision.gameObject.CompareTag("Arrow") && !hasCollided)
+        {
             hasCollided = true;
-                        
-            transform.parent = other.transform;
-                        
-            Destroy(other.gameObject, destroyDelay);
-            Destroy(gameObject, destroyDelay); 
-                        
+
+            collision.transform.parent = transform;
+
             animator.SetTrigger("Death");
+
+            if (killCounter != null)
+            {
+                killCounter.IncreaseKillCount();
+            }
+
+            Destroy(collision.gameObject);
+            Destroy(gameObject, destroyDelay);
         }
     }
 }

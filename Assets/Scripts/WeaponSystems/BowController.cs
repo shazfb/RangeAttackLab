@@ -2,23 +2,24 @@ using UnityEngine;
 
 public class BowController : MonoBehaviour
 {
-    public GameObject arrowPrefab; 
+    public GameObject arrowPrefab;
     public Transform arrowSpawnPoint;
-    public GameObject bowEquiped; 
-    private BowType bowType; 
-    private string bowName; 
+    public GameObject bowEquiped;
+    private BowType bowType;
+    private string bowName;
 
-    private float launchSpeed = 50f; 
+    [SerializeField] private float maxLaunchSpeed = 20f;
+    [SerializeField] private float minLaunchSpeed = 10f; 
 
     private float currentPullback = 0f;
     private bool isPulling = false;
-    private float drawbackStartTime; 
+    private float drawbackStartTime;
 
-    private float activeMultiplier; 
+    private float activeMultiplier;
     private float activePullbackTime;
     private float pullbackPercentage;
 
-    private GameObject instantiatedArrow; 
+    private GameObject instantiatedArrow;
     private Vector3 arrowDirection = Vector3.forward;
 
 
@@ -33,9 +34,9 @@ public class BowController : MonoBehaviour
         {
             UpdatePull();
             UpdateArrowDirection();
-            UpdateArrowPosition(); 
+            UpdateArrowPosition();
         }
-       
+
         if (Input.GetMouseButtonDown(0))
         {
             StartPulling();
@@ -53,7 +54,7 @@ public class BowController : MonoBehaviour
 
 
     private void EquipBow()
-    {        
+    {
         if (bowEquiped != null)
         {
             bowType = bowEquiped.GetComponent<BowType>();
@@ -80,17 +81,16 @@ public class BowController : MonoBehaviour
         isPulling = true;
         drawbackStartTime = Time.time;
         instantiatedArrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, Quaternion.identity);
-        instantiatedArrow.transform.parent = transform; 
+        instantiatedArrow.transform.parent = transform;
     }
 
-    private void UpdatePull() 
+    private void UpdatePull()
     {
         float drawbackTime = Time.time - drawbackStartTime;
 
         currentPullback = Mathf.Clamp(drawbackTime, float.Epsilon, activePullbackTime);
-        
-        pullbackPercentage = Mathf.Clamp((currentPullback / activePullbackTime) * 100, float.Epsilon, 100);
 
+        pullbackPercentage = Mathf.Clamp((currentPullback / activePullbackTime) * 100, float.Epsilon, 100);
     }
 
     private void UpdateArrowDirection()
@@ -110,19 +110,19 @@ public class BowController : MonoBehaviour
 
         Rigidbody arrowRigidbody = instantiatedArrow.AddComponent<Rigidbody>();
         arrowRigidbody.useGravity = true;
+                
+        float launchSpeed = Mathf.Lerp(minLaunchSpeed, maxLaunchSpeed, pullbackPercentage / 100);
 
-        arrowRigidbody.AddForce(arrowDirection * (launchSpeed * (pullbackPercentage / 100)), ForceMode.Impulse);
+        arrowRigidbody.AddForce(arrowDirection * launchSpeed, ForceMode.Impulse);
 
         ArrowScript arrowScript = instantiatedArrow.GetComponent<ArrowScript>();
         float baseDamage = 1f;
         float totalDamage = baseDamage * activeMultiplier * pullbackPercentage;
         arrowScript.SetDamage(totalDamage);
 
-        arrowScript.ReleaseArrow(); 
+        arrowScript.ReleaseArrow();
 
         instantiatedArrow.transform.parent = null;
         instantiatedArrow = null;
     }
-
-
 }
