@@ -5,7 +5,7 @@ public class EnemySpawner : MonoBehaviour
 {
     public GameObject enemyPrefab;
     public int initialMinEnemies = 10;
-    public float enemiesIncreasePercentage = 0.2f; // 10% increase per wave
+    public float enemiesIncreasePercentage = 0.2f;
     public float spawnInterval = 2f;
     public Transform[] spawnPoints;
     public TextMeshProUGUI waveText;
@@ -14,8 +14,8 @@ public class EnemySpawner : MonoBehaviour
     private int currentWave = 1;
     private int enemiesRemaining;
     private bool spawningEnabled = true;
-    private bool countdownInProgress = false; // Flag to control spawning during countdown
-    private int enemiesKilled = 0; // Counter for enemies killed in the current wave
+    private bool countdownInProgress = false;
+    private int enemiesKilled = 0;
 
     private int lastSpawnPointIndex = -1;
 
@@ -45,9 +45,9 @@ public class EnemySpawner : MonoBehaviour
 
     private void StartWave()
     {
-        spawningEnabled = false; // Disable spawning initially
-        enemiesRemaining = Mathf.RoundToInt(initialMinEnemies * Mathf.Pow(1 + enemiesIncreasePercentage, currentWave - 1)); // Increase enemies for next wave
-        enemiesKilled = 0; // Reset enemies killed for the new wave
+        spawningEnabled = false; 
+        enemiesRemaining = Mathf.RoundToInt(initialMinEnemies * Mathf.Pow(1 + enemiesIncreasePercentage, currentWave - 1)); 
+        enemiesKilled = 0; 
         waveText.text = "Wave: " + currentWave;
 
         StartCoroutine(CountdownAndSpawn());
@@ -67,9 +67,8 @@ public class EnemySpawner : MonoBehaviour
         countdownText.text = "";
         countdownInProgress = false;
 
-        spawningEnabled = true; // Enable spawning after countdown
-
-        // Start spawning enemies
+        spawningEnabled = true; 
+        
         InvokeRepeating("SpawnEnemy", 0f, spawnInterval);
     }
 
@@ -79,7 +78,6 @@ public class EnemySpawner : MonoBehaviour
         {
             int nextSpawnPointIndex;
 
-            // Choose a random spawn point index different from the last used one
             do
             {
                 nextSpawnPointIndex = Random.Range(0, spawnPoints.Length);
