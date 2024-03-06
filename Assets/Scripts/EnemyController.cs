@@ -10,12 +10,14 @@ public class EnemyController : MonoBehaviour
     private Transform player;
     private Animator animator;
     private EnemyKillCounter killCounter;
+    private CountdownTimer countdownTimer;
 
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         animator = GetComponentInChildren<Animator>();
         killCounter = FindObjectOfType<EnemyKillCounter>();
+        countdownTimer = FindObjectOfType<CountdownTimer>();
     }
 
     void Update()
@@ -44,12 +46,14 @@ public class EnemyController : MonoBehaviour
             hasCollided = true;
 
             collision.transform.parent = transform;
+            countdownTimer.AddTime();
 
             animator.SetTrigger("Death");
 
             if (killCounter != null)
             {
                 killCounter.IncreaseKillCount();
+                
             }
 
             Destroy(collision.gameObject);

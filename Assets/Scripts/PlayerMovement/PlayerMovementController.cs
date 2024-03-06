@@ -23,6 +23,9 @@ public class PlayerMovementController : MonoBehaviour
 
     public Animator animator;
 
+    public GameObject pauseUI;
+    private bool isPaused = false;
+
     private void Start()
     {
         playerTransform = transform;
@@ -35,6 +38,16 @@ public class PlayerMovementController : MonoBehaviour
 
     private void Update()
     {
+        if (isPaused)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                TogglePause();
+                pauseUI.gameObject.SetActive(false);
+            }
+            return; 
+        }
+
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
@@ -111,6 +124,13 @@ public class PlayerMovementController : MonoBehaviour
         {
             animator.SetBool("isJumping", true);
         }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            TogglePause();
+            pauseUI.gameObject.SetActive(true);
+
+        }
     }
 
     private void Jump()
@@ -125,5 +145,11 @@ public class PlayerMovementController : MonoBehaviour
         {
             isGrounded = true;
         }
+    }
+
+    private void TogglePause()
+    {
+        isPaused = !isPaused;
+        Time.timeScale = isPaused ? 0f : 1f;
     }
 }

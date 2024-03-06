@@ -1,15 +1,18 @@
 using UnityEngine;
+using TMPro;
 
 public class BowController : MonoBehaviour
 {
     public GameObject arrowPrefab;
     public Transform arrowSpawnPoint;
-    public GameObject bowEquiped;
+    public GameObject bowEquipped;
+    public TextMeshProUGUI pullbackText; 
+
     private BowType bowType;
     private string bowName;
 
-    [SerializeField] private float maxLaunchSpeed = 20f;
-    [SerializeField] private float minLaunchSpeed = 10f; 
+    [SerializeField] private float maxLaunchSpeed = 100f;
+    [SerializeField] private float minLaunchSpeed = 5f;
 
     private float currentPullback = 0f;
     private bool isPulling = false;
@@ -21,7 +24,6 @@ public class BowController : MonoBehaviour
 
     private GameObject instantiatedArrow;
     private Vector3 arrowDirection = Vector3.forward;
-
 
     private void Start()
     {
@@ -35,6 +37,7 @@ public class BowController : MonoBehaviour
             UpdatePull();
             UpdateArrowDirection();
             UpdateArrowPosition();
+            UpdatePullbackText(); 
         }
 
         if (Input.GetMouseButtonDown(0))
@@ -45,6 +48,8 @@ public class BowController : MonoBehaviour
         {
             ReleaseArrow();
         }
+
+        pullbackText.gameObject.SetActive(isPulling);
     }
 
     private void UpdateArrowPosition()
@@ -52,12 +57,11 @@ public class BowController : MonoBehaviour
         instantiatedArrow.transform.position = arrowSpawnPoint.position;
     }
 
-
     private void EquipBow()
     {
-        if (bowEquiped != null)
+        if (bowEquipped != null)
         {
-            bowType = bowEquiped.GetComponent<BowType>();
+            bowType = bowEquipped.GetComponent<BowType>();
             Debug.Log("Bow Name = " + bowName);
             if (bowType != null)
             {
@@ -72,7 +76,7 @@ public class BowController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("No equipped bow GameObject assigned to the bowEquiped field.");
+            Debug.LogError("No equipped bow GameObject assigned to the bowEquipped field.");
         }
     }
 
@@ -101,7 +105,6 @@ public class BowController : MonoBehaviour
         Debug.DrawRay(arrowSpawnPoint.position, arrowDirection * 10f, Color.green);
 
         instantiatedArrow.transform.rotation = Quaternion.LookRotation(arrowDirection);
-
     }
 
     public void ReleaseArrow()
@@ -110,7 +113,7 @@ public class BowController : MonoBehaviour
 
         Rigidbody arrowRigidbody = instantiatedArrow.AddComponent<Rigidbody>();
         arrowRigidbody.useGravity = true;
-                
+
         float launchSpeed = Mathf.Lerp(minLaunchSpeed, maxLaunchSpeed, pullbackPercentage / 100);
 
         arrowRigidbody.AddForce(arrowDirection * launchSpeed, ForceMode.Impulse);
@@ -124,5 +127,19 @@ public class BowController : MonoBehaviour
 
         instantiatedArrow.transform.parent = null;
         instantiatedArrow = null;
+
+        Vector3 arrowVelocity = arrowRigidbody.velocity;
+        if (arrowVelocity != Vector3.zero)
+        {
+            instantiatedArrow.transform.rotation = Quaternion.LookRotation(arrowVelocity);
+        }
+    }
+
+    private void UpdatePullbackText()
+    {
+        if (pullbackText != null)
+        {
+            pullbackText.text = pullbackPercentage.ToString("F0") + "%";
+        }
     }
 }

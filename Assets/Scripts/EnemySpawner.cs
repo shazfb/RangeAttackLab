@@ -1,12 +1,13 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
 
 public class EnemySpawner : MonoBehaviour
 {
     public GameObject enemyPrefab;
-    public int initialMinEnemies = 10;
+    public int initialMinEnemies = 5;
     public float enemiesIncreasePercentage = 0.2f;
-    public float spawnInterval = 2f;
+    public float spawnInterval = 1.5f;
     public Transform[] spawnPoints;
     public TextMeshProUGUI waveText;
     public TextMeshProUGUI countdownText;
@@ -19,8 +20,11 @@ public class EnemySpawner : MonoBehaviour
 
     private int lastSpawnPointIndex = -1;
 
+    public CountdownTimer countdownTimer;
+
     void Start()
     {
+        GetComponent<CountdownTimer>();
         StartWave();
     }
 
@@ -34,13 +38,18 @@ public class EnemySpawner : MonoBehaviour
 
         if (countdownInProgress)
         {
+            countdownTimer.PauseCountdown(true);
+
             GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
             foreach (GameObject enemy in enemies)
             {
                 enemy.SetActive(false);
             }
         }
-        
+        else
+        {
+            countdownTimer.PauseCountdown(false);
+        }
     }
 
     private void StartWave()
@@ -53,13 +62,13 @@ public class EnemySpawner : MonoBehaviour
         StartCoroutine(CountdownAndSpawn());
     }
 
-    private System.Collections.IEnumerator CountdownAndSpawn()
+    private IEnumerator CountdownAndSpawn()
     {
         countdownInProgress = true;
         int countdownDuration = 10;
         while (countdownDuration > 0)
         {
-            countdownText.text = "Next wave in: " + countdownDuration + " seconds";
+            countdownText.text = "Next wave incoming in " + countdownDuration + " seconds";
             yield return new WaitForSeconds(1);
             countdownDuration--;
         }
@@ -102,4 +111,10 @@ public class EnemySpawner : MonoBehaviour
             StartWave();
         }
     }
+
+    public int GetCurrentWave()
+    {
+        return currentWave;
+    }
+   
 }

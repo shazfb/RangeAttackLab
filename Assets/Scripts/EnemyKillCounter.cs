@@ -16,4 +16,9 @@ public class EnemyKillCounter : MonoBehaviour
     {
         enemyCountText.text = "Enemies Killed: " + enemyKillCount;
     }
+
+    public int GetEnemiesKilled()
+    {
+        return enemyKillCount;
+    }
 }
