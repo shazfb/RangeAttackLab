@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using Cinemachine;
 
 public class PlayerMovementController : MonoBehaviour
@@ -26,6 +27,12 @@ public class PlayerMovementController : MonoBehaviour
     public GameObject pauseUI;
     private bool isPaused = false;
 
+    public bool hasCollided;
+
+    private CountdownTimer countdownTimer;
+   
+    private EnemyController enemyController;
+
     private void Start()
     {
         playerTransform = transform;
@@ -34,6 +41,10 @@ public class PlayerMovementController : MonoBehaviour
         Cursor.visible = false;
         thirdPersonCamera.gameObject.SetActive(true);
         aimCamera.gameObject.SetActive(false);
+        hasCollided = false;
+
+        countdownTimer = FindObjectOfType<CountdownTimer>();
+       
     }
 
     private void Update()
@@ -45,7 +56,7 @@ public class PlayerMovementController : MonoBehaviour
                 TogglePause();
                 pauseUI.gameObject.SetActive(false);
             }
-            return; 
+            return;
         }
 
         float horizontal = Input.GetAxis("Horizontal");
@@ -145,7 +156,28 @@ public class PlayerMovementController : MonoBehaviour
         {
             isGrounded = true;
         }
+
+        if (collision.gameObject.CompareTag("Enemy") && !hasCollided)
+        {
+            EnemyController enemyController = collision.gameObject.GetComponent<EnemyController>();
+            if (enemyController != null && !enemyController.isDead)
+            {
+                hasCollided = true;
+                countdownTimer.ReduceTime();
+
+                Debug.Log("You got hit, 10 seconds deducted");
+
+                StartCoroutine(ResetCollisionAfterDelay());
+            }
+        }
     }
+
+    private IEnumerator ResetCollisionAfterDelay()
+    {
+        yield return new WaitForSeconds(1.5f);
+        hasCollided = false;
+    }
+
 
     private void TogglePause()
     {

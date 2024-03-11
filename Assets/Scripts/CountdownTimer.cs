@@ -8,6 +8,7 @@ public class CountdownTimer : MonoBehaviour
     private float remainingTime;
     public TextMeshProUGUI countdownText;
     public GameObject addTimeText;
+    public GameObject reduceTimeText;
     public GameOverController gameOverController;
 
     public GameObject gameOverScreen;
@@ -19,6 +20,7 @@ public class CountdownTimer : MonoBehaviour
         UpdateUI();
         gameOverScreen.gameObject.SetActive(false);
         addTimeText.SetActive(false);
+        reduceTimeText.SetActive(false);
     }
 
     private void Update()
@@ -49,6 +51,11 @@ public class CountdownTimer : MonoBehaviour
         StartCoroutine(AddTimeCoroutine());
     }
 
+    public void ReduceTime()
+    {
+        StartCoroutine (ReduceTimeCoroutine());
+    }
+
     private IEnumerator AddTimeCoroutine()
     {
         remainingTime += 5f;
@@ -57,6 +64,16 @@ public class CountdownTimer : MonoBehaviour
         yield return new WaitForSeconds(1.5f); 
 
         addTimeText.SetActive(false); 
+    }
+
+    private IEnumerator ReduceTimeCoroutine()
+    {
+        remainingTime -= 10f;
+        reduceTimeText.SetActive(true);
+
+        yield return new WaitForSeconds(1.5f);
+
+        reduceTimeText.SetActive(false);
     }
 
     public void PauseCountdown(bool pause)

@@ -6,11 +6,15 @@ public class EnemyController : MonoBehaviour
     public float speed = 0.4f;
     public float rotationSpeed = 5f;
 
-    private bool hasCollided = false;
+    public bool hasCollided = false;
+    public bool isDead = false;
+
     private Transform player;
     private Animator animator;
     private EnemyKillCounter killCounter;
     private CountdownTimer countdownTimer;
+
+    public GameObject enemyMarker;
 
     void Start()
     {
@@ -44,6 +48,7 @@ public class EnemyController : MonoBehaviour
         if (collision.gameObject.CompareTag("Arrow") && !hasCollided)
         {
             hasCollided = true;
+            enemyMarker.SetActive(false);
 
             collision.transform.parent = transform;
             countdownTimer.AddTime();
@@ -55,9 +60,11 @@ public class EnemyController : MonoBehaviour
                 killCounter.IncreaseKillCount();
                 
             }
+            isDead = true;
 
             Destroy(collision.gameObject);
             Destroy(gameObject, destroyDelay);
         }
+        
     }
 }
