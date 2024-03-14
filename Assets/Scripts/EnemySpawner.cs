@@ -68,7 +68,7 @@ public class EnemySpawner : MonoBehaviour
         int countdownDuration = 10;
         while (countdownDuration > 0)
         {
-            countdownText.text = "Next wave incoming in " + countdownDuration + " seconds";
+            countdownText.text = "Next wave incoming: " + countdownDuration + " seconds";
             yield return new WaitForSeconds(1);
             countdownDuration--;
         }
